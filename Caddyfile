@@ -1,10 +1,10 @@
 # ===========================================
 # Caddyfile for Atlas Digitalize
-# Configured for Cloudflare proxy
+# Configured for Cloudflare Full SSL mode
 # ===========================================
 
-# HTTP configuration for Cloudflare (Cloudflare handles SSL termination)
-http://atlasdigitalize.com, http://www.atlasdigitalize.com {
+# HTTPS configuration (Caddy auto-provisions Let's Encrypt certificate)
+atlasdigitalize.com, www.atlasdigitalize.com {
     # Compression (gzip, zstd)
     encode zstd gzip
 
