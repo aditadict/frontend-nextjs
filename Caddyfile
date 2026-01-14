@@ -1,0 +1,68 @@
+# ===========================================
+# Caddyfile for Atlas Digitalize
+# Add this to your VPS Caddy configuration
+# ===========================================
+
+atlasdigitalize.com, www.atlasdigitalize.com {
+    # Automatic HTTPS (Let's Encrypt)
+    # Caddy handles this automatically!
+
+    # Compression (gzip, zstd)
+    encode zstd gzip
+
+    # Security headers
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        -Server
+    }
+
+    # Next.js static files - immutable cache (1 year)
+    @static path /_next/static/*
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    # Next.js image optimization - cache 24 hours
+    @images path /_next/image*
+    header @images Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
+
+    # Public static files - cache 24 hours
+    @publicStatic path /images/* /favicon.ico /robots.txt /sitemap.xml /manifest.json
+    header @publicStatic Cache-Control "public, max-age=86400"
+
+    # Health check endpoint
+    handle /health {
+        respond "healthy" 200
+    }
+
+    # Reverse proxy to Next.js container
+    reverse_proxy localhost:9004 {
+        # Health checks
+        health_uri /
+        health_interval 30s
+        health_timeout 5s
+
+        # Headers
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+
+        # Timeouts
+        transport http {
+            keepalive 30s
+            keepalive_idle_conns 10
+        }
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/atlasdigitalize.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+}
