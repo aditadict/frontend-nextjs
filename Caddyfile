@@ -1,12 +1,10 @@
 # ===========================================
 # Caddyfile for Atlas Digitalize
-# Add this to your VPS Caddy configuration
+# Configured for Cloudflare proxy
 # ===========================================
 
-atlasdigitalize.com, www.atlasdigitalize.com {
-    # Automatic HTTPS (Let's Encrypt)
-    # Caddy handles this automatically!
-
+# HTTP configuration for Cloudflare (Cloudflare handles SSL termination)
+http://atlasdigitalize.com, http://www.atlasdigitalize.com {
     # Compression (gzip, zstd)
     encode zstd gzip
 
@@ -17,7 +15,6 @@ atlasdigitalize.com, www.atlasdigitalize.com {
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "camera=(), microphone=(), geolocation=()"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         -Server
     }
 
@@ -40,12 +37,10 @@ atlasdigitalize.com, www.atlasdigitalize.com {
 
     # Reverse proxy to Next.js container
     reverse_proxy localhost:9004 {
-        # Health checks
         health_uri /
         health_interval 30s
         health_timeout 5s
 
-        # Timeouts
         transport http {
             keepalive 30s
             keepalive_idle_conns 10
